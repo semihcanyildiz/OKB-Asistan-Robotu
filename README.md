@@ -2,7 +2,7 @@
 
 ## Sistem Görseli
 
-![Robot](robot.jpg)
+![Robot](robot.jpeg)
 
 # OKB Asistanı Robotu
 
