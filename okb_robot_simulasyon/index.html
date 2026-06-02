@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OKB Asistanı Simülasyon V3</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="layout">
+    <aside class="phone">
+      <div class="phone-title">TELEGRAM</div>
+      <div id="chat" class="chat">
+        <div class="msg bot">OKB Asistanı aktif. Görev komutu bekleniyor.</div>
+      </div>
+
+      <div class="buttons">
+        <button onclick="sendCommand('MUTFAK')">/mutfak</button>
+        <button onclick="sendCommand('UTU')">/utu</button>
+        <button onclick="sendCommand('SALON')">/salon</button>
+        <button onclick="sendCommand('FOTO')">/foto</button>
+        <button onclick="sendCommand('DUR')" class="danger">/dur</button>
+        <button onclick="sendCommand('RESET')">/reset</button>
+      </div>
+
+      <input id="cmdInput" placeholder="/mutfak yaz ve Enter..." />
+    </aside>
+
+    <main class="main">
+      <h1>OKB Asistanı - Ev İçi Görev Simülasyonu</h1>
+      <p>Bu sürüm görsel demo amaçlıdır: robot komuta göre gerçekten mutfak, ütü masası veya salona gider; rapor/foto alır; dönüşte yuvaya tatlı geri yanaşır.</p>
+      <canvas id="canvas" width="1050" height="680"></canvas>
+
+      <div class="panel">
+        <span><b>Durum:</b> <span id="state">Beklemede</span></span>
+        <span><b>Görev:</b> <span id="route">Yok</span></span>
+        <span><b>Adım:</b> <span id="step">-</span></span>
+        <span><b>Konum:</b> <span id="pos">-</span></span>
+      </div>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
