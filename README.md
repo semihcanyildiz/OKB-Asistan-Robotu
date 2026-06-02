@@ -1,3 +1,7 @@
+## Sistem Görseli
+
+![Robot](robot.jpg)
+
 # OKB Asistanı Robotu
 
 Telegram kontrollü mobil ev içi güvenlik ve izleme robotu.
