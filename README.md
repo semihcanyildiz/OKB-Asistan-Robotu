@@ -4,6 +4,12 @@
 
 ![Robot](robot.jpeg)
 
+## Proje Tanıtım Videosu
+
+Projenin çalışır durumdaki videosu aşağıdaki bağlantıdan izlenebilir:
+
+[https://youtu.be/VIDEO_ID](https://youtube.com/shorts/gVRPspkJmlE?feature=share)
+
 # OKB Asistanı Robotu
 
 Telegram kontrollü mobil ev içi güvenlik ve izleme robotu.
