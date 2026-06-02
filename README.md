@@ -1,3 +1,5 @@
+![Simülasyon](simulasyon.png)
+
 ## Sistem Görseli
 
 ![Robot](robot.jpg)
