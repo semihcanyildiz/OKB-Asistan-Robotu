@@ -23,3 +23,13 @@ Telegram kontrollü mobil ev içi güvenlik ve izleme robotu.
 ## Proje Amacı
 
 OKB kaynaklı kontrol davranışlarını azaltmaya yardımcı olacak düşük maliyetli mobil yardımcı robot geliştirmek.
+## Simülasyon
+
+VS Code + Live Server kullanılarak çalıştırılabilir.
+
+Komutlar:
+- /mutfak
+- /utu
+- /salon
+- /foto
+- /dur
