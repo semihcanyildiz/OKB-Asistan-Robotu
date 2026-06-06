@@ -1,4 +1,9 @@
-![Simülasyon](simulasyon.png)
+## Canlı Simülasyon
+
+https://semihcanyildiz.github.io/OKB-Asistan-Robotu/
+
+Bu simülasyon OKB Asistanı robotunun oda, mutfak ve salon görevlerini,
+sensör verilerini ve yuvaya dönüş senaryolarını göstermektedir.
 
 ## Sistem Görseli
 
