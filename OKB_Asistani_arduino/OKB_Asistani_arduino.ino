@@ -205,9 +205,9 @@ void komut(String k) {
   b = s = 0; aktif = false; dur();
 
   if (k == "MUTFAK") {
-    ekle(ILERI, 200);  // 280 cm koridor 
+    ekle(ILERI, 200);  // 130 cm koridor 
     ekle(SAG, 26);     // 92-93 derece mutfağa dön
-    ekle(ILERI, 100);  // 80 cm ocağa yanaş 
+    ekle(ILERI, 100);  // 65 cm ocağa yanaş 
     ekle(RAPORLA, 0);  
     
     // DÖNÜŞ (U Dönüşlü)
@@ -219,35 +219,48 @@ void komut(String k) {
     ekle(GERI, 110);   // Başlangıç konumu için yuvaya gir
     next();
   }
-  
+  else if (k == "ODA") {
+    ekle(ILERI, 100); 
+    ekle(SAG, 25);    
+    ekle(ILERI, 300); 
+    ekle(RAPORLA, 0);  
+    
+    ekle(SAG, 56);   
+    ekle(ILERI, 300); 
+    ekle(SOL, 25);    
+    ekle(ILERI, 55);
+    ekle(SAG, 56);   
+    ekle(GERI, 55);   
+    next();
+  }
   
 
   else if (k == "SALON") {
-    ekle(ILERI, 280); // 100 cm (100 x 4)
-    ekle(SOL, 87);
+    ekle(ILERI, 100); 
+    ekle(SOL, 25);
     ekle(ILERI, 240);
-    ekle(SOL, 87);
-    ekle(ILERI, 520);
-    ekle(SAG, 48);
-    ekle(ILERI, 520);
+    ekle(SOL, 25);
+    ekle(ILERI, 200);
+    ekle(SAG, 13);
+    ekle(ILERI, 200);
     ekle(RAPORLA, 0);  
     
-    ekle(SAG, 175);   
-    ekle(ILERI, 520);
-    ekle(SOL, 48);
-    ekle(ILERI, 520);
-    ekle(SAG, 87);
+    ekle(SAG, 56);   
+    ekle(ILERI, 200);
+    ekle(SOL, 13);
+    ekle(ILERI, 200);
+    ekle(SAG, 25);
     ekle(ILERI, 240);  
-    ekle(SOL, 87);
-    ekle(GERI, 280);   // Başlangıç konumu için yuvaya gir
+    ekle(SOL, 25);
+    ekle(GERI, 110);   // Başlangıç konumu için yuvaya gir
     next();
   }
 
   // 🛑 MANUEL KONTROLLER (Hassas Değerler)
-  else if (k == "ILERI") { ekle(ILERI, 200); next(); } // Tam 20 cm
-  else if (k == "GERI")  { ekle(GERI, 200); next(); }  // Tam 20 cm
+  else if (k == "ILERI") { ekle(ILERI, 200); next(); } // Tam 130 cm
+  else if (k == "GERI")  { ekle(GERI, 200); next(); }  // Tam 130 cm
   else if (k == "SAG")   { ekle(SAG, 25); next(); }   // Tam 90 Derece
-  else if (k == "SOL")   { ekle(SOL, 34); next(); }   // Tam 90 Derece
+  else if (k == "SOL")   { ekle(SOL, 25); next(); }   // Tam 90 Derece
   else if (k == "DUR")   { dur(); }
 }
 
