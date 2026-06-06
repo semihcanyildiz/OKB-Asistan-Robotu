@@ -129,7 +129,6 @@ void handleNewMessages(int numNewMessages) {
     else if (text == "/geri")  { Serial.println("GERI"); }
     else if (text == "/sag")   { Serial.println("SAG"); }
     else if (text == "/sol")   { Serial.println("SOL"); }
-    else if (text == "/don")   { Serial.println("DONUS"); }
     else if (text == "/dur")   { 
       Serial.println("DUR"); 
       bot.sendMessage(chat_id, "Acil fren yapildi!", "");
