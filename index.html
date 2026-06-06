@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>OKB Asistanı Simülasyonu</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f2f2f2;
+  display: flex;
+  height: 100vh;
+}
+
+.phone {
+  width: 285px;
+  height: 560px;
+  background: #111;
+  border-radius: 35px;
+  margin: 25px;
+  padding: 18px;
+  box-shadow: 0 0 20px #777;
+}
+
+.screen {
+  background: #e7f3ff;
+  height: 100%;
+  border-radius: 25px;
+  overflow: hidden;
+}
+
+.header {
+  background: #2aabee;
+  color: white;
+  padding: 15px;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.chat {
+  padding: 15px;
+}
+
+.cmd {
+  background: white;
+  padding: 12px;
+  margin: 10px 0;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: bold;
+  color: #1376a8;
+}
+
+.cmd:hover {
+  background: #d5efff;
+}
+
+.message {
+  background: white;
+  padding: 12px;
+  border-radius: 12px;
+  margin-top: 15px;
+  font-size: 14px;
+  white-space: pre-line;
+  line-height: 1.45;
+}
+
+.alarm {
+  background: #ffdddd;
+  color: #b00000;
+  font-weight: bold;
+}
+
+.map-area {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+canvas {
+  background: white;
+  border: 2px solid #ddd;
+}
+</style>
+</head>
+
+<body>
+
+<div class="phone">
+  <div class="screen">
+    <div class="header">Telegram - OKB Asistanı</div>
+
+    <div class="chat">
+      <div class="cmd" onclick="startMission('mutfak')">/mutfak</div>
+      <div class="cmd" onclick="startMission('salon')">/salon</div>
+      <div class="cmd" onclick="startMission('oda')">/oda</div>
+      <div class="cmd" onclick="takePhoto()">/foto</div>
+      <div class="cmd" onclick="stopRobot()">/dur</div>
+
+      <div class="message" id="status">Komut bekleniyor...</div>
+    </div>
+  </div>
+</div>
+
+<div class="map-area">
+  <canvas id="canvas" width="780" height="560"></canvas>
+</div>
+
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+const statusBox = document.getElementById("status");
+
+let animationId = null;
+let wheelSpin = 0;
+let sensorTimer = null;
+
+let currentGas = 320;
+let currentTemp = 25.4;
+
+const GAS_LIMIT = 600;
+const TEMP_LIMIT = 45;
+
+const home = { x: 370, y: 350 };
+
+let robot = {
+  x: home.x,
+  y: home.y,
+  angle: -90,
+  moving: false,
+  path: [],
+  target: null,
+  returning: false,
+  docking: false
+};
+
+function drawMap() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  ctx.lineWidth = 4;
+
+  ctx.strokeStyle = "black";
+  ctx.strokeRect(210, 50, 330, 330);
+
+  ctx.strokeStyle = "red";
+  ctx.strokeRect(80, 380, 470, 130);
+
+  ctx.strokeStyle = "#9bdc00";
+  ctx.strokeRect(540, 50, 190, 130);
+
+  ctx.strokeStyle = "#0099ff";
+  ctx.strokeRect(550, 180, 180, 200);
+
+  ctx.lineWidth = 10;
+  ctx.strokeStyle = "white";
+
+  ctx.beginPath();
+  ctx.moveTo(250, 380);
+  ctx.lineTo(300, 380);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(540, 90);
+  ctx.lineTo(540, 130);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(550, 225);
+  ctx.lineTo(550, 270);
+  ctx.stroke();
+
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = "#a66a3f";
+  ctx.fillStyle = "#fff8ef";
+  ctx.fillRect(335, 315, 75, 60);
+  ctx.strokeRect(335, 315, 75, 60);
+
+  ctx.fillStyle = "black";
+  ctx.font = "bold 18px Arial";
+  ctx.fillText("yuva", 353, 350);
+
+  ctx.font = "bold 30px Arial";
+  ctx.fillText("koridor", 270, 130);
+  ctx.fillText("mutfak", 585, 130);
+  ctx.fillText("oda", 590, 280);
+  ctx.fillText("salon", 230, 465);
+
+  drawTargetPoint(620, 115, "M");
+  drawTargetPoint(620, 285, "O");
+  drawTargetPoint(210, 445, "S");
+}
+
+function drawTargetPoint(x, y, label) {
+  ctx.fillStyle = "#eeeeee";
+  ctx.beginPath();
+  ctx.arc(x, y, 12, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = "black";
+  ctx.font = "bold 12px Arial";
+  ctx.fillText(label, x - 4, y + 4);
+}
+
+function drawRobot() {
+  ctx.save();
+  ctx.translate(robot.x, robot.y);
+  ctx.rotate(robot.angle * Math.PI / 180);
+
+  ctx.fillStyle = "#444";
+  ctx.fillRect(-20, -28, 40, 56);
+
+  ctx.fillStyle = "#00cc66";
+  ctx.fillRect(-11, -38, 22, 12);
+
+  drawWheel(-25, -15);
+  drawWheel(25, -15);
+  drawWheel(-25, 15);
+  drawWheel(25, 15);
+
+  ctx.fillStyle = "white";
+  ctx.font = "bold 12px Arial";
+  ctx.fillText("OKB", -12, 5);
+
+  ctx.restore();
+}
+
+function drawWheel(x, y) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(wheelSpin);
+
+  ctx.fillStyle = "#222";
+  ctx.fillRect(-5, -10, 10, 20);
+
+  ctx.strokeStyle = "white";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(-4, 0);
+  ctx.lineTo(4, 0);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+function drawSensorPanel() {
+  ctx.fillStyle = currentGas >= GAS_LIMIT || currentTemp >= TEMP_LIMIT ? "#ffdddd" : "#eaf8ea";
+  ctx.fillRect(20, 20, 170, 85);
+
+  ctx.strokeStyle = "#333";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(20, 20, 170, 85);
+
+  ctx.fillStyle = "black";
+  ctx.font = "bold 15px Arial";
+  ctx.fillText("Canlı Sensör", 45, 43);
+
+  ctx.font = "14px Arial";
+  ctx.fillText("Gaz: " + currentGas, 40, 68);
+  ctx.fillText("Sıcaklık: " + currentTemp + " °C", 40, 90);
+
+  if (currentGas >= GAS_LIMIT || currentTemp >= TEMP_LIMIT) {
+    ctx.fillStyle = "#b00000";
+    ctx.font = "bold 18px Arial";
+    ctx.fillText("ALARM!", 105, 90);
+  }
+}
+
+function draw() {
+  drawMap();
+  drawSensorPanel();
+  drawRobot();
+}
+
+function createPath(place) {
+  if (place === "mutfak") {
+    return [
+      { x: 370, y: 300 },
+      { x: 500, y: 300 },
+      { x: 500, y: 110 },
+      { x: 545, y: 110 },
+      { x: 620, y: 115 }
+    ];
+  }
+
+  if (place === "oda") {
+    return [
+      { x: 370, y: 300 },
+      { x: 505, y: 300 },
+      { x: 505, y: 245 },
+      { x: 555, y: 245 },
+      { x: 620, y: 285 }
+    ];
+  }
+
+  if (place === "salon") {
+    return [
+      { x: 330, y: 350 },
+      { x: 275, y: 385 },
+      { x: 245, y: 420 },
+      { x: 210, y: 445 }
+    ];
+  }
+}
+
+function createReturnPath(place) {
+  if (place === "mutfak") {
+    return [
+      { x: 545, y: 110 },
+      { x: 500, y: 110 },
+      { x: 500, y: 300 },
+      { x: 400, y: 330 },
+      { x: 370, y: 330 }
+    ];
+  }
+
+  if (place === "oda") {
+    return [
+      { x: 555, y: 245 },
+      { x: 505, y: 245 },
+      { x: 505, y: 300 },
+      { x: 400, y: 330 },
+      { x: 370, y: 330 }
+    ];
+  }
+
+  if (place === "salon") {
+    return [
+      { x: 245, y: 420 },
+      { x: 275, y: 385 },
+      { x: 330, y: 350 },
+      { x: 370, y: 330 }
+    ];
+  }
+}
+
+function startMission(place) {
+  if (robot.moving) return;
+
+  statusBox.classList.remove("alarm");
+
+  robot.target = place;
+  robot.returning = false;
+  robot.docking = false;
+  robot.path = createPath(place);
+  robot.moving = true;
+
+  startSensorUpdates();
+
+  statusBox.innerText =
+    "/" + place + " komutu alındı.\n" +
+    "Robot kapı geçişlerini kullanarak yola çıktı...";
+
+  moveRobot();
+}
+
+function moveRobot() {
+  if (!robot.moving || robot.path.length === 0) {
+    if (!robot.returning) {
+      arriveTarget();
+    } else {
+      startDocking();
+    }
+    return;
+  }
+
+  const next = robot.path[0];
+
+  const dx = next.x - robot.x;
+  const dy = next.y - robot.y;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+
+  if (dist < 3) {
+    robot.x = next.x;
+    robot.y = next.y;
+    robot.path.shift();
+  } else {
+    robot.angle = Math.atan2(dy, dx) * 180 / Math.PI + 90;
+    robot.x += dx / dist * 2;
+    robot.y += dy / dist * 2;
+    wheelSpin += 0.25;
+  }
+
+  draw();
+  animationId = requestAnimationFrame(moveRobot);
+}
+
+function arriveTarget() {
+  robot.moving = false;
+
+  updateSensors();
+
+  let alarmText = "";
+  if (currentGas >= GAS_LIMIT || currentTemp >= TEMP_LIMIT) {
+    statusBox.classList.add("alarm");
+    alarmText = "\nUYARI: Gaz veya sıcaklık değeri yüksek!";
+  } else {
+    statusBox.classList.remove("alarm");
+  }
+
+  statusBox.innerText =
+    "Robot " + robot.target + " konumuna ulaştı.\n" +
+    "Fotoğraf çekildi.\n" +
+    "Gaz değeri: " + currentGas + "\n" +
+    "Sıcaklık: " + currentTemp + " °C" +
+    alarmText +
+    "\n180° dönüş yapılıyor...";
+
+  setTimeout(returnHome, 1300);
+}
+
+function returnHome() {
+  robot.angle += 180;
+  robot.returning = true;
+  robot.moving = true;
+  robot.path = createReturnPath(robot.target);
+
+  statusBox.innerText += "\nRobot yuvaya dönüş yolunda...";
+
+  moveRobot();
+}
+
+function startDocking() {
+  robot.moving = false;
+  robot.docking = true;
+
+  statusBox.innerText += "\nYuvaya çok yakın noktaya gelindi.";
+  statusBox.innerText += "\nRobot geri geri yanaşıyor...";
+
+  const dockInterval = setInterval(() => {
+    robot.angle = 180;
+
+    if (robot.y < home.y) {
+      robot.y += 1.2;
+      wheelSpin -= 0.25;
+      draw();
+    } else {
+      clearInterval(dockInterval);
+
+      robot.x = home.x;
+      robot.y = home.y;
+      robot.angle = -90;
+      robot.docking = false;
+
+      stopSensorUpdates();
+      draw();
+
+      statusBox.classList.remove("alarm");
+      statusBox.innerText += "\nRobot yuvaya başarıyla geri geri yanaştı.";
+    }
+  }, 25);
+}
+
+function takePhoto() {
+  updateSensors();
+
+  statusBox.classList.remove("alarm");
+
+  statusBox.innerText =
+    "Fotoğraf çekildi.\n" +
+    "Gaz değeri: " + currentGas + "\n" +
+    "Sıcaklık: " + currentTemp + " °C";
+
+  if (currentGas >= GAS_LIMIT || currentTemp >= TEMP_LIMIT) {
+    statusBox.classList.add("alarm");
+    statusBox.innerText += "\nUYARI: Riskli değer algılandı!";
+  }
+
+  draw();
+}
+
+function stopRobot() {
+  robot.moving = false;
+  robot.path = [];
+  cancelAnimationFrame(animationId);
+  stopSensorUpdates();
+
+  statusBox.classList.remove("alarm");
+  statusBox.innerText = "Robot durduruldu.";
+}
+
+function updateSensors() {
+  currentGas = Math.floor(Math.random() * 420 + 220);
+  currentTemp = (Math.random() * 28 + 22).toFixed(1);
+}
+
+function startSensorUpdates() {
+  stopSensorUpdates();
+
+  sensorTimer = setInterval(() => {
+    updateSensors();
+
+    if (robot.moving) {
+      let text =
+        "Görev: " + robot.target + "\n" +
+        "Robot hareket halinde...\n" +
+        "Gaz: " + currentGas + "\n" +
+        "Sıcaklık: " + currentTemp + " °C";
+
+      if (currentGas >= GAS_LIMIT || currentTemp >= TEMP_LIMIT) {
+        statusBox.classList.add("alarm");
+        text += "\nUYARI: Gaz veya sıcaklık yüksek!";
+      } else {
+        statusBox.classList.remove("alarm");
+      }
+
+      statusBox.innerText = text;
+    }
+
+    draw();
+  }, 800);
+}
+
+function stopSensorUpdates() {
+  if (sensorTimer) {
+    clearInterval(sensorTimer);
+    sensorTimer = null;
+  }
+}
+
+draw();
+</script>
+
+</body>
+</html>
