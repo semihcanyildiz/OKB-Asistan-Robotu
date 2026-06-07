@@ -7,7 +7,7 @@ sensör verilerini ve yuvaya dönüş senaryolarını göstermektedir.
 
 ## Sistem Görseli
 
-![Robot](robot.jpeg)
+![Robot](robot.png)
 
 ## Proje Tanıtım Videosu
 
