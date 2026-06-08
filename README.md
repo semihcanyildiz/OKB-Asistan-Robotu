@@ -13,7 +13,7 @@ sensör verilerini ve yuvaya dönüş senaryolarını göstermektedir.
 
 Projenin çalışır durumdaki videosu aşağıdaki bağlantıdan izlenebilir:
 
-
+https://youtu.be/gkV_Qgjs5V4
 
 # OKB Asistanı Robotu
 
